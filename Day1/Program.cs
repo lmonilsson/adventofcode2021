@@ -5,7 +5,7 @@ using System.Linq;
 
 List<int> LoadDepths()
 {
-    return File.ReadAllText("input.txt").Trim().Split()
+    return File.ReadAllLines("input.txt")
         .Select(line => int.Parse(line))
         .ToList();
 }
@@ -29,15 +29,14 @@ void Part2()
 {
     var depths = LoadDepths();
     var increases = 0;
-    var window = depths.Take(3).Sum();
     for (int i = 1; i < depths.Count - 2; i++)
     {
-        var nextWindow = depths[i] + depths[i + 1] + depths[i + 2];
-        if (nextWindow > window)
+        var window = depths[i] + depths[i + 1] + depths[i + 2];
+        var prevWindow = depths[i - 1] + depths[i] + depths[i + 1];
+        if (window > prevWindow)
         {
             increases++;
         }
-        window = nextWindow;
     }
 
     Console.WriteLine($"Part 2: {increases}");
