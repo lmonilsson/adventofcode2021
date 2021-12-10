@@ -3,7 +3,7 @@ var ClosingTokens = new List<char> { ')', ']', '}', '>' };
 
 List<string> LoadInput()
 {
-    //var input = new[] 
+    //var input = new[]
     //{
     //    "[({(<(())[]>[[{[]{<()<>>",
     //    "[(()[<>])]({[<{<<[]>>(",
@@ -27,7 +27,7 @@ void Part1()
     var score = 0;
     foreach (var entry in entries)
     {
-        var illegal = TryFindIllegalCharacter(entry);
+        var (illegal, _) = ParseEntry(entry);
         score += illegal switch
         {
             ')' => 3,
@@ -41,9 +41,31 @@ void Part1()
     Console.WriteLine($"Part 1: {score}");
 }
 
-char? TryFindIllegalCharacter(string entry)
+void Part2()
 {
+    var entries = LoadInput();
+
+    var scores = new List<long>();
+    foreach (var entry in entries)
+    {
+        var (_, completion) = ParseEntry(entry);
+        if (completion.Any())
+        {
+            scores.Add(GetCompletionScore(completion));
+        }
+    }
+
+    scores = scores.OrderBy(x => x).ToList();
+    var middle = scores[scores.Count / 2];
+    Console.WriteLine($"Part 2: {middle}");
+}
+
+(char? IllegalCharacter, List<char> Completion) ParseEntry(string entry)
+{
+    char? illegal = null;
+    var completion = new List<char>();
     var openings = new Stack<char>();
+
     foreach (var c in entry)
     {
         var closingTokenIdx = ClosingTokens.IndexOf(c);
@@ -57,11 +79,41 @@ char? TryFindIllegalCharacter(string entry)
         }
         else
         {
-            return c;
+            illegal = c;
+            break;
         }
     }
 
-    return null;
+    if (illegal == null)
+    {
+        while (openings.Any())
+        {
+            var openingTokenIdx = OpeningTokens.IndexOf(openings.Pop());
+            completion.Add(ClosingTokens[openingTokenIdx]);
+        }
+    }
+
+    return (illegal, completion);
+}
+
+long GetCompletionScore(List<char> completion)
+{
+    long score = 0;
+    foreach (var c in completion)
+    {
+        score *= 5;
+        score += c switch
+        {
+            ')' => 1,
+            ']' => 2,
+            '}' => 3,
+            '>' => 4,
+            _ => 0
+        };
+    }
+
+    return score;
 }
 
 Part1();
+Part2();
